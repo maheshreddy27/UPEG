@@ -12,7 +12,7 @@ public class APIBaseTest {
     public void setUp() {
         // Initialize API base URL and other configurations
         RestAssured.baseURI = ConfigReader.getProperty("apiBaseUrl");
-        // Additional configuration if needed
+        // Additional configurations if needed
 
         // Set API authentication if required
         // For example, setting API token

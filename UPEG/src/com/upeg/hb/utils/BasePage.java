@@ -6,19 +6,25 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.apache.logging.log4j.LogManager;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.PageFactory;
+import org.openqa.selenium.support.ui.Select;
 import org.apache.logging.log4j.Logger;
 
 import com.upeg.utils.ApplicationConstants;
 
 public class BasePage {
 	protected WebDriver driver;
+	protected JavascriptExecutor jse;
 	ApplicationConstants applicationConstants = new ApplicationConstants();
 	protected static final Logger log = LogManager.getLogger(BaseTest.class);
 
     public BasePage(WebDriver driver) {
         this.driver = driver;
+        jse = (JavascriptExecutor) driver;
         PageFactory.initElements(driver, this);
     }
     
@@ -111,6 +117,28 @@ public class BasePage {
 		}
 		return actualData;
 
+	}
+    
+    protected void maxWindow() {
+			String script = "if (window.screen){window.moveTo(0, 0);window.resizeTo(window.screen.availWidth,window.screen.availHeight);};";
+			jse.executeScript(script);
+		
+	}
+
+	protected void scrollAndWait(int x, int y, int ms) throws InterruptedException {
+		jse.executeScript("scroll(" + x + ", " + y + ");");
+		Thread.sleep(ms);
+	}
+
+	public void javascriptClick(WebElement element){
+	    JavascriptExecutor ex = (JavascriptExecutor)driver;
+	    ex.executeScript("arguments[0].click();", element);
+	}
+	
+	public void focusSelectAndSelectByValue(WebElement element, String value){
+        Actions build = new Actions(driver);
+        build.moveToElement(element).build().perform();
+        new Select(element).selectByVisibleText(value);
 	}
 
 }
