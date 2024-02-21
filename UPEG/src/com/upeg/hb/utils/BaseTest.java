@@ -37,6 +37,8 @@ import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.interactions.Action;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedCondition;
@@ -45,9 +47,14 @@ import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.annotations.AfterMethod;
+import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeMethod;
 
+import com.aventstack.extentreports.ExtentReports;
+import com.aventstack.extentreports.ExtentTest;
 import com.upeg.utils.ConfigReader;
+import com.upeg.utils.ExtentManager;
+import io.github.bonigarcia.wdm.WebDriverManager;
 
 
 public class BaseTest {
@@ -55,12 +62,30 @@ public class BaseTest {
 	protected WebDriver driver;
     protected String baseUrl;
     public static final Logger log = LogManager.getLogger(BaseTest.class);
+    private ExtentReports extent = ExtentManager.getInstance();
+    public ExtentTest test;
 
     @BeforeMethod
     public void setUp() {
-        // Initialize WebDriver
-        driver = new ChromeDriver();
+    	
+    	// Initialize WebDriver
+    	String browserName=ConfigReader.getProperty("browser");
+    	if (browserName.equalsIgnoreCase("chrome")) {
+            WebDriverManager.chromedriver().setup(); // Automatically downloads and manages chromedriver
+            driver = new ChromeDriver();
+        } else if (browserName.equalsIgnoreCase("firefox")) {
+            WebDriverManager.firefoxdriver().setup(); // Automatically downloads and manages geckodriver
+            driver = new FirefoxDriver();
+        } else if (browserName.equalsIgnoreCase("ie")) {
+            WebDriverManager.iedriver().setup(); // Automatically downloads and manages IEDriverServer
+            driver = new InternetExplorerDriver();
+        } else {
+            throw new IllegalArgumentException("Invalid browser name: " + browserName);
+        }
         driver.manage().window().maximize();
+        
+        //Test execution started
+        test = extent.createTest("UPEG");
 
         // Set base URL
         baseUrl = ConfigReader.getProperty("baseUrl");
@@ -70,11 +95,16 @@ public class BaseTest {
     }
 
     @AfterMethod
-    public void tearDown() {
+    public void closeBrowser() {
         // Quit the WebDriver instance after test execution
         if (driver != null) {
             driver.quit();
         }
+    }
+    
+    @AfterSuite
+    public void tearDown() {
+        extent.flush();
     }
 
 }
